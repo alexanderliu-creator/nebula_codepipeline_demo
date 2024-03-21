@@ -10,7 +10,7 @@ phases:
         - echo Test if AWS credentials exist
         - aws sts get-caller-identity
         - echo Logging in to Amazon EKS...
-        - aws eks update-kubeconfig --region $CURIE_AWS_DEFAULT_REGION --name prod-cluster-test
+        - aws eks update-kubeconfig --region us-west-2 --name prod-cluster
         - echo check config
         - kubectl config view --minify
         - echo check kubectl access
