@@ -3,6 +3,7 @@ phases:
   install:
     commands:
       - echo "Install Phase - if you need additional package, add it in this stage"
+
   pre_build:
     commands:
       # This Docker Image tag will have date, time and Codecommit version
@@ -15,15 +16,14 @@ phases:
       - aws --version
       - aws sts assume-role --role-arn arn:aws:iam::186296540553:role/code-build-kubectl-role --role-session-name eks-codebuild --duration-seconds 900
       - aws sts get-caller-identity
-      - kubectl config view --minify
+      - kubectl config view --minify --kubeconfig $HOME/.kube/config
       - kubectl get svc
-      - aws eks update-kubeconfig --name prod-cluster --region us-west-2
+      - aws eks update-kubeconfig --name prod-cluster --region us-west-2 --kubeconfig $HOME/.kube/config
       # View kubectl configuration
-#      - aws eks update-kubeconfig --name prod-cluster --region us-west-2 --role-arn arn:aws:iam::186296540553:role/eks-cluster-access-role
       - kubectl version --short --client
-      - kubectl config view --minify
+      - kubectl config view --minify --kubeconfig $HOME/.kube/config
       - echo check kubectl access
-#      - kubectl get svc
+      - kubectl get svc
       # Login to ECR Registry
       - echo "Login in to Amazon ECR Registry"
       - aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin 186296540553.dkr.ecr.us-west-2.amazonaws.com/nebula-demo-repo
@@ -57,12 +57,10 @@ phases:
       - echo $AWS_EXPIRATION
       # Updating kubectl with your EKS Cluster
       - echo "Update Kube Config configuration"
-      - aws eks update-kubeconfig --name $EKS_CLUSTERNAME
+      - aws eks update-kubeconfig --name $EKS_CLUSTERNAME --kubeconfig $HOME/.kube/config
       # Show time, applying manifests changes using kubectl
       - echo "Apply changes to kube manifests"
-#      - kubectl apply -f manifests/deployment.yaml -n nebula-demo
-      - echo "kubectl set image deployment/nebula-demo-app nebula-demo-app=$REPOSITORY_URL:$TAG -n nebula-demo"
-      - kubectl set image deployment/nebula-demo-app nebula-demo-app=$REPOSITORY_URL:$TAG -n nebula-demo
+      - kubectl apply -f manifests/deployment.yaml -n nebula-demo
       - echo "All done!!!! Kubernetes changes applied"
       # Create Artifacts which we can use if we want to continue our pipeline for other stages
       - printf '[{"name":"deployment.yaml","imageUri":"%s"}]' $REPOSITORY_URL:$TAG > build.json
