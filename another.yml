@@ -1,0 +1,48 @@
+version: 0.1
+# run-as: root
+cache:
+  paths:
+    - '/root/.docker/**/*'
+
+artifacts:
+  files:
+    - '**/*'
+#  base-directory: api
+
+phases:
+  pre_build:
+    commands:
+      - echo 'Check kubectl version'
+      - kubectl version --short --client
+      - echo Test if AWS credentials exist
+      - aws sts get-caller-identity
+      - echo Logging in to Amazon EKS...
+      - aws eks update-kubeconfig --region $CURIE_AWS_DEFAULT_REGION --name prod-cluster-test
+      - echo check config
+      - kubectl config view --minify
+      - echo check kubectl access
+      - kubectl get svc
+      - echo Logging in to Amazon ECR...
+      - aws ecr get-login-password --region $CURIE_AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $CURIE_AWS_ACCOUNT_ID.dkr.ecr.$CURIE_AWS_DEFAULT_REGION.amazonaws.com
+
+
+  build:
+    commands:
+      - echo $(git describe --tags --abbrev=0)
+      - echo This is the dev version.
+      - echo Build started on `date`
+      - echo Building the Docker image...
+      - docker login --username curietech --password curietech
+      - docker build -t $CURIE_IMAGE_REPO_NAME:"$(git describe --tags --abbrev=0)" -f Dockerfile .
+      - docker images
+      - docker tag $CURIE_IMAGE_REPO_NAME:"$(git describe --tags --abbrev=0)" $CURIE_AWS_ACCOUNT_ID.dkr.ecr.$CURIE_AWS_DEFAULT_REGION.amazonaws.com/$CURIE_IMAGE_REPO_NAME:"$(git describe --tags --abbrev=0)"
+
+  post_build:
+    commands:
+      - echo Build completed on `date`
+      - echo Pushing the Docker image...
+      - echo docker push $CURIE_AWS_ACCOUNT_ID.dkr.ecr.$CURIE_AWS_DEFAULT_REGION.amazonaws.com/$CURIE_IMAGE_REPO_NAME:"$(git describe --tags --abbrev=0)"
+      - docker push $CURIE_AWS_ACCOUNT_ID.dkr.ecr.$CURIE_AWS_DEFAULT_REGION.amazonaws.com/$CURIE_IMAGE_REPO_NAME:"$(git describe --tags --abbrev=0)"
+      - echo Push the latest image to cluster
+      - kubectl set image deployment/api-dev $CURIE_IMAGE_REPO_NAME=$CURIE_AWS_ACCOUNT_ID.dkr.ecr.$CURIE_AWS_DEFAULT_REGION.amazonaws.com/$CURIE_IMAGE_REPO_NAME:"$(git describe --tags --abbrev=0)" -n api
+      # kubectl set image deployment/deploymentName containerName=ECR_URL"version -n <namespace>
