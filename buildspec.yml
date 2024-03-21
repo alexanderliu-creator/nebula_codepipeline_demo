@@ -15,9 +15,6 @@ phases:
         - aws --version
         # Login to ECR Registry
         - echo "Login in to Amazon ECR Registry"
-        - $(aws ecr get-login --no-include-email)
-        # Update Kube config Home Directory
-        - export KUBECONFIG=$HOME/.kube/config
         - aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin 186296540553.dkr.ecr.us-west-2.amazonaws.com/nebula-demo-repo
         # Update Kube config Home Directory
         - export KUBECONFIG=$HOME/.kube/config
