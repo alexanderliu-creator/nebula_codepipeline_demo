@@ -18,7 +18,7 @@ phases:
       - kubectl version --short --client
       - kubectl config view --minify
       - echo check kubectl access
-      - kubectl get svc
+#      - kubectl get svc
       # Login to ECR Registry
       - echo "Login in to Amazon ECR Registry"
       - aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin 186296540553.dkr.ecr.us-west-2.amazonaws.com/nebula-demo-repo
