@@ -1,21 +1,20 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: my-eks-pipeline-deployment
-  labels:
-    app: my-eks-pipeline-deployment
+  name: nebula-demo-app
+  namespace: nebula-demo
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: my-eks-pipeline-deployment
+      app: nebula-demo-app
   template:
     metadata:
       labels:
-        app: my-eks-pipeline-deployment
+        app: nebula-demo-app
     spec:
       containers:
-        - name: my-eks-pipeline-deployment
+        - name: nebula-demo-app
           image: CONTAINER_IMAGE
           ports:
             - containerPort: 80
