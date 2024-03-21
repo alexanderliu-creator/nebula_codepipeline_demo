@@ -3,40 +3,27 @@ phases:
   install:
     commands:
       - echo "Install Phase - if you need additional package, add it in this stage"
-
   pre_build:
-    commands:
-      # This Docker Image tag will have date, time and Codecommit version
-      - TAG="$(date +%Y-%m-%d.%H.%M.%S).$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | head -c 8)"
-      # Updating Docker Image tag in your Kubernetes Deployment Manifest
-      - echo "Update Image tag in kubernetes manifest"
-      - sed -i 's@CONTAINER_IMAGE@'"$REPOSITORY_URL:$TAG"'@' manifests/deployment.yaml
-      # Check AWS CLI Version
-      - echo "Checking AWS CLI Version..."
-      - aws --version
-      - aws sts assume-role --role-arn arn:aws:iam::186296540553:role/code-build-kubectl-role --role-session-name eks-codebuild --duration-seconds 900
-      - aws sts get-caller-identity
-      - kubectl config view --minify --kubeconfig $HOME/.kube/config
-      - kubectl get svc
-      - aws eks update-kubeconfig --name prod-cluster --region us-west-2 --kubeconfig $HOME/.kube/config
-      # View kubectl configuration
-      - kubectl version --short --client
-      - kubectl config view --minify --kubeconfig $HOME/.kube/config
-      - echo check kubectl access
-      - kubectl get svc
-      # Login to ECR Registry
-      - echo "Login in to Amazon ECR Registry"
-      - aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin 186296540553.dkr.ecr.us-west-2.amazonaws.com/nebula-demo-repo
-      # Update Kube config Home Directory
-      - export KUBECONFIG=$HOME/.kube/config
-
+      commands:
+        # This Docker Image tag will have date, time and Codecommit version
+        - TAG="$(date +%Y-%m-%d.%H.%M.%S).$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | head -c 8)"
+        # Updating Docker Image tag in your Kubernetes Deployment Manifest
+        - echo "Update Image tag in kubernetes manifest"
+        - sed -i 's@CONTAINER_IMAGE@'"$REPOSITORY_URL:$TAG"'@' manifests/deployment.yaml
+        # Check AWS CLI Version
+        - echo "Checking AWS CLI Version..."
+        - aws --version
+        # Login to ECR Registry
+        - echo "Login in to Amazon ECR Registry"
+        - aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin 186296540553.dkr.ecr.us-west-2.amazonaws.com/nebula-demo-repo
+        # Update Kube config Home Directory
+        - export KUBECONFIG=$HOME/.kube/config
   build:
     commands:
       # Building Docker Image
       - echo "Docker build started on `date`"
       - echo "Building the Docker image..."
       - docker build --tag $REPOSITORY_URL:$TAG .
-
   post_build:
     commands:
       # Push Docker Image to ECR Repository
@@ -57,10 +44,14 @@ phases:
       - echo $AWS_EXPIRATION
       # Updating kubectl with your EKS Cluster
       - echo "Update Kube Config configuration"
-      - aws eks update-kubeconfig --name $EKS_CLUSTERNAME --kubeconfig $HOME/.kube/config
+      - aws eks update-kubeconfig --name $EKS_CLUSTERNAME
       # Show time, applying manifests changes using kubectl
       - echo "Apply changes to kube manifests"
-      - kubectl apply -f manifests/deployment.yaml -n nebula-demo
+      # - kubectl apply -f manifests/deployment.yaml
+      # - CURRENT_DIRECTORY=$(pwd)
+      # - echo "kubectl set image deployment/nebula-demo-app nebula-demo-app=$REPOSITORY_URL:$TAG -n nebula-demo"
+      # - echo "kubectl apply -f $CURRENT_DIRECTORY/manifests/deployment.yaml"
+      - kubectl apply -f manifests/
       - echo "All done!!!! Kubernetes changes applied"
       # Create Artifacts which we can use if we want to continue our pipeline for other stages
       - printf '[{"name":"deployment.yaml","imageUri":"%s"}]' $REPOSITORY_URL:$TAG > build.json
