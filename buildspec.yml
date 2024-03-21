@@ -14,7 +14,7 @@ phases:
       - echo "Checking AWS CLI Version..."
       - aws --version
       # View kubectl configuration
-      - aws eks update-kubeconfig --name prod-cluster --region us-west-2 --role-arn $EKS_ROLE_ARN
+      - aws eks update-kubeconfig --name prod-cluster --region us-west-2 --role-arn arn:aws:iam::186296540553:role/eks-cluster-access-role
       - kubectl version --short --client
       - kubectl config view --minify
       - echo check kubectl access
