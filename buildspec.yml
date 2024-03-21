@@ -18,12 +18,16 @@ phases:
         - aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin 186296540553.dkr.ecr.us-west-2.amazonaws.com/nebula-demo-repo
         # Update Kube config Home Directory
         - export KUBECONFIG=$HOME/.kube/config
+
   build:
     commands:
       # Building Docker Image
       - echo "Docker build started on `date`"
       - echo "Building the Docker image..."
+      - docker login --username curietech --password curietech
+      - docker images
       - docker build --tag $REPOSITORY_URL:$TAG .
+
   post_build:
     commands:
       # Push Docker Image to ECR Repository
