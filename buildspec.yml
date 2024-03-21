@@ -48,10 +48,9 @@ phases:
       # Show time, applying manifests changes using kubectl
       - echo "Apply changes to kube manifests"            
       # - kubectl apply -f manifests/deployment.yaml
-      - pwd
-      - ls
+      - CURRENT_DIRECTORY=$(pwd)
       - echo "kubectl set image deployment/nebula-demo-app nebula-demo-app=$REPOSITORY_URL:$TAG -n nebula-demo"
-      - kubectl apply -f ./manifests/
+      - kubectl apply -f CURRENT_DIRECTORY/manifests/
       - echo "All done!!!! Kubernetes changes applied"           
       # Create Artifacts which we can use if we want to continue our pipeline for other stages
       - printf '[{"name":"deployment.yaml","imageUri":"%s"}]' $REPOSITORY_URL:$TAG > build.json            
