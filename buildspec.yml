@@ -14,6 +14,7 @@ phases:
       - echo "Checking AWS CLI Version..."
       - aws --version
       # View kubectl configuration
+      - kubectl version --short --client
       - kubectl config view --minify
       - echo check kubectl access
       - kubectl get svc
