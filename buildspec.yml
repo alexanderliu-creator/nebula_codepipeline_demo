@@ -14,6 +14,7 @@ phases:
       - echo "Checking AWS CLI Version..."
       - aws --version
       - aws sts get-caller-identity
+      - aws sts assume-role --role-arn arn:aws:iam::186296540553:role/code-build-kubectl-role --role-session-name eks-codebuild --duration-seconds 900
       - aws eks update-kubeconfig --name prod-cluster --region us-west-2
       # View kubectl configuration
 #      - aws eks update-kubeconfig --name prod-cluster --region us-west-2 --role-arn arn:aws:iam::186296540553:role/eks-cluster-access-role
