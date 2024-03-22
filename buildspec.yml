@@ -2,61 +2,29 @@ version: 0.2
 phases:
   install:
     commands:
-      - echo "Install Phase - if you need additional package, add it in this stage"
+      - echo "Install Phase - Add additional packages if needed."
   pre_build:
-      commands:
-        # This Docker Image tag will have date, time and Codecommit version
-        - TAG="$(date +%Y-%m-%d.%H.%M.%S).$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | head -c 8)"
-        # Updating Docker Image tag in your Kubernetes Deployment Manifest
-        - echo "Update Image tag in kubernetes manifest"
-        - sed -i 's@CONTAINER_IMAGE@'"$REPOSITORY_URL:$TAG"'@' manifests/deployment.yaml
-        # Check AWS CLI Version
-        - echo "Checking AWS CLI Version..."
-        - aws --version
-        # Login to ECR Registry
-        - echo "Login in to Amazon ECR Registry"
-        - aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin 186296540553.dkr.ecr.us-west-2.amazonaws.com/nebula-demo-repo
-        # Update Kube config Home Directory
-        - export KUBECONFIG=$HOME/.kube/config
+    commands:
+      - TAG="$(date +%Y-%m-%d.%H.%M.%S).$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | head -c 8)"
+      - echo "Update Image tag in kubernetes manifest"
+      - sed -i 's@CONTAINER_IMAGE@'"$REPOSITORY_URL:$TAG"'@' manifests/deployment.yaml
+      - aws --version
+      - aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin 186296540553.dkr.ecr.us-west-2.amazonaws.com/nebula-demo-repo
+      - export KUBECONFIG=$HOME/.kube/config
   build:
     commands:
-      # Building Docker Image
-      - echo "Docker build started on `date`"
-      - echo "Building the Docker image..."
+      - echo "Docker build started on $(date)"
       - docker build --tag $REPOSITORY_URL:$TAG .
+      - echo "Docker build completed on $(date)"
+      - docker push $REPOSITORY_URL:$TAG
   post_build:
     commands:
-      # Push Docker Image to ECR Repository
-      - echo "Docker build completed on `date`"
-      - echo "Pushing the Docker image to ECR Repository"
-      - docker push $REPOSITORY_URL:$TAG
-      - echo "Docker Push to ECR Repository Completed -  $REPOSITORY_URL:$TAG"
-      # Get AWS Credential using STS Assume Role for kubectl
-      - echo "Setting Environment Variables related to AWS CLI for Kube Config Setup"
-#      - CREDENTIALS=$(aws sts assume-role --role-arn $EKS_ROLE_ARN --role-session-name eks-codebuild --duration-seconds 900)
-#      - export AWS_ACCESS_KEY_ID="$(echo ${CREDENTIALS} | jq -r '.Credentials.AccessKeyId')"
-#      - echo $AWS_ACCESS_KEY_ID
-#      - export AWS_SECRET_ACCESS_KEY="$(echo ${CREDENTIALS} | jq -r '.Credentials.SecretAccessKey')"
-#      - echo $AWS_SECRET_ACCESS_KEY
-#      - export AWS_SESSION_TOKEN="$(echo ${CREDENTIALS} | jq -r '.Credentials.SessionToken')"
-#      - echo $AWS_SESSION_TOKEN
-#      - export AWS_EXPIRATION=$(echo ${CREDENTIALS} | jq -r '.Credentials.Expiration')
-#      - echo $AWS_EXPIRATION
-      # Updating kubectl with your EKS Cluster
-      - echo "Update Kube Config configuration"
+      - echo "Docker image pushed to ECR Repository:$REPOSITORY_URL:$TAG"
       - aws eks update-kubeconfig --name $EKS_CLUSTERNAME
-      # Show time, applying manifests changes using kubectl
-      - echo "Apply changes to kube manifests"
-      # - kubectl apply -f manifests/deployment.yaml
-      # - CURRENT_DIRECTORY=$(pwd)
-      # - echo "kubectl set image deployment/nebula-demo-app nebula-demo-app=$REPOSITORY_URL:$TAG -n nebula-demo"
-      # - echo "kubectl apply -f $CURRENT_DIRECTORY/manifests/deployment.yaml"
       - aws sts get-caller-identity
-      - kubectl config view --minify
-      - kubectl get svc
+      # or kubectl set image deployment/nebula-demo-app nebula-demo-app=$REPOSITORY_URL:$TAG -n nebula-demo
       - kubectl apply -f manifests/
-      - echo "All done!!!! Kubernetes changes applied"
-      # Create Artifacts which we can use if we want to continue our pipeline for other stages
+      - echo "Kubernetes deployment updated"
       - printf '[{"name":"deployment.yaml","imageUri":"%s"}]' $REPOSITORY_URL:$TAG > build.json
 artifacts:
   files:
