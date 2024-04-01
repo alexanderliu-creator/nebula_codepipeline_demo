@@ -10,7 +10,7 @@ phases:
       - sed -i 's@CONTAINER_IMAGE@'"$REPOSITORY_URL:$TAG"'@' manifests/deployment.yaml
       - aws --version
       - aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin 186296540553.dkr.ecr.us-west-2.amazonaws.com/nebula-demo-repo
-      - docker login --username edgedocker007 --password YJnLPa%vbuE
+      - docker login --username edgedocker007 --password dckr_pat_0b1aLsMSB_m963g0njXMgRTnSOo
       - export KUBECONFIG=$HOME/.kube/config
   build:
     commands:
