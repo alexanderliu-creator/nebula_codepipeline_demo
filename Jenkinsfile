@@ -27,8 +27,8 @@ pipeline {
         stage('Build') {
             steps {
                 script{
-                    app = docker.build("tamar-jenkins-test")
-                    echo "Docker image built: tamar-jenkins-test"
+                    app = docker.build("nebula-demo-repo")
+                    echo "Docker image built: nebula-demo-repo"
                 }
             }
         }
