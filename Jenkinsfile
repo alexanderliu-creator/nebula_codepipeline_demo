@@ -10,7 +10,7 @@ pipeline {
                     def branchName = params.BranchName.split('/').last()
                     // 使用简化的checkout命令动态指定分支名
                     echo "==================================================== Before checking"
-                    checkout scm: [$class: 'GitSCM', branches: [[name: "*/${branchName}"]], userRemoteConfigs: [[url: 'https://github.com/alexanderliu-creator/Jenkins-to-ECR/']]]
+                    checkout scm: [$class: 'GitSCM', branches: [[name: "*/${branchName}"]], userRemoteConfigs: [[url: 'https://github.com/alexanderliu-creator/nebula_codepipeline_demo/']]]
 
                     def currentBranch = scm.branches[0].name
                     if (currentBranch.contains ("*/")){
