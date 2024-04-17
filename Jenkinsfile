@@ -27,8 +27,8 @@ pipeline {
         stage('Build') {
             steps {
                 script{
-                    app = docker.build("nebula-demo-repo")
-                    echo "Docker image built: nebula-demo-repo"
+                    app = docker.build("tamar-jenkins-test")
+                    echo "Docker image built: tamar-jenkins-test"
                 }
             }
         }
@@ -57,7 +57,7 @@ pipeline {
                     def newTag = "${branchName}-${buildTime}"
 
                     // 使用新的镜像标签进行推送
-                    docker.withRegistry('https://186296540553.dkr.ecr.us-west-2.amazonaws.com/nebula-demo-repo', 'ecr:us-west-2:181266c6-4c43-4088-bd78-cf889a1643e7') {
+                    docker.withRegistry('https://186296540553.dkr.ecr.us-west-2.amazonaws.com/tamar-jenkins-test', 'ecr:us-west-2:181266c6-4c43-4088-bd78-cf889a1643e7') {
                         app.push(newTag)
                         echo "Images pushed: ${newTag} and latest"
                         // app.push("latest")
