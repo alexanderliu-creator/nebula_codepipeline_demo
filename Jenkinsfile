@@ -9,15 +9,9 @@ pipeline {
                 script{
                     def branchName = params.BranchName.split('/').last()
                     // 使用简化的checkout命令动态指定分支名
-                    echo "==================================================== Before checking"
+                    echo "==================================================== Before checking sum"
                     checkout scm: [$class: 'GitSCM', branches: [[name: "*/${branchName}"]], userRemoteConfigs: [[url: 'https://github.com/alexanderliu-creator/nebula_codepipeline_demo/']]]
-
-                    def currentBranch = scm.branches[0].name
-                    if (currentBranch.contains ("*/")){
-                        currentBranch = currentBranch.split("\\*/")[1]
-                    }
-                    echo "==================================================== Now ${currentBranch}"
-                    echo "==================================================== After checking"
+                    echo "==================================================== After checking sum"
                     // 打印当前分支名
                     echo "Branch name: ${branchName}"
                 }
