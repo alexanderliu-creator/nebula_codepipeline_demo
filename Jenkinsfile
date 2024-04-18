@@ -41,10 +41,9 @@ pipeline {
                     // 使用新的镜像标签进行推送
                     docker.withRegistry('https://186296540553.dkr.ecr.us-west-2.amazonaws.com/tamar-jenkins-test', 'ecr:us-west-2:181266c6-4c43-4088-bd78-cf889a1643e7') {
                         app.push(newTag)
-                        echo "Images pushed: ${newTag} and latest"
-                        // app.push("latest")
-                        // app.push()
                     }
+
+                    echo "ECR image URI is: 186296540553.dkr.ecr.us-west-2.amazonaws.com/tamar-jenkins-test:${newTag}"
                 }
             }
         }
